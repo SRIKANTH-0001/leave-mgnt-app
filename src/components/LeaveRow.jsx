@@ -10,7 +10,7 @@ function formatDate(dateString) {
     })
 }
 
-const LeaveRow = ({ leave }) => (
+const LeaveRow = ({ leave, onCancel, onReview }) => (
     <tr>
         <td className="leave-type">{leave.type}</td>
         <td>{formatDate(leave.from)}</td>
@@ -18,6 +18,21 @@ const LeaveRow = ({ leave }) => (
         <td className="days-cell">{leave.days}</td>
         <td className="optional-column">{leave.reason}</td>
         <td className="optional-column"><StatusBadge status={leave.status} /></td>
+        <td>
+            {leave.status === "Pending" && (
+                <div className="row-actions">
+                    <button className="review-button review-button--approve" type="button" onClick={() => onReview(leave.id, "Approved")}>
+                        Approve
+                    </button>
+                    <button className="review-button review-button--reject" type="button" onClick={() => onReview(leave.id, "Rejected")}>
+                        Reject
+                    </button>
+                    <button className="cancel-button" type="button" onClick={() => onCancel(leave.id)}>
+                        Cancel
+                    </button>
+                </div>
+            )}
+        </td>
     </tr>
 )
 

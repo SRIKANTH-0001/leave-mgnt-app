@@ -51,6 +51,11 @@
     resize: vertical;
 }
 
+.form-error {
+    color: #b42318;
+    font-size: 12px;
+}
+
 .form-button {
     width: 100%;
     min-height: 41px;
