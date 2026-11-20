@@ -1,0 +1,103 @@
+{
+  "leaveTypes": [
+    {
+      "id": "casual",
+      "name": "Casual",
+      "total": 11
+    },
+    {
+      "id": "sick",
+      "name": "Sick",
+      "total": 8
+    },
+    {
+      "id": "earned",
+      "name": "Earned",
+      "total": 12
+    }
+  ],
+  "leaves": [
+    {
+      "id": "1",
+      "type": "Casual",
+      "from": "2026-11-04",
+      "to": "2026-11-07",
+      "days": 4,
+      "reason": "Family function",
+      "status": "Approved"
+    },
+    {
+      "id": "2",
+      "type": "Sick",
+      "from": "2026-10-20",
+      "to": "2026-10-20",
+      "days": 1,
+      "reason": "Fever",
+      "status": "Approved"
+    },
+    {
+      "id": "3",
+      "type": "Earned",
+      "from": "2026-12-25",
+      "to": "2026-12-31",
+      "days": 7,
+      "reason": "Year-end trip",
+      "status": "Rejected"
+    },
+    {
+      "id": "4",
+      "type": "Casual",
+      "from": "2026-10-02",
+      "to": "2026-10-02",
+      "days": 1,
+      "reason": "Personal work",
+      "status": "Rejected"
+    },
+    {
+      "id": "5",
+      "type": "Sick",
+      "from": "2026-09-12",
+      "to": "2026-09-13",
+      "days": 2,
+      "reason": "Doctor visit",
+      "status": "Approved"
+    },
+    {
+      "id": "6",
+      "type": "Casual",
+      "from": "2026-08-18",
+      "to": "2026-08-18",
+      "days": 1,
+      "reason": "Bank work",
+      "status": "Approved"
+    },
+    {
+      "id": "ZgDseWZQKeQ",
+      "type": "Sick",
+      "from": "2026-11-21",
+      "to": "2026-11-22",
+      "days": 2,
+      "reason": "Fever",
+      "status": "Rejected"
+    },
+    {
+      "id": "zXYfYHgmyRM",
+      "type": "Sick",
+      "from": "2026-11-14",
+      "to": "2026-11-16",
+      "days": 3,
+      "reason": "Fever",
+      "status": "Approved"
+    },
+    {
+      "id": "TDaSna-xEcI",
+      "type": "Sick",
+      "from": "2026-11-21",
+      "to": "2026-11-23",
+      "days": 3,
+      "reason": "Fever",
+      "status": "Approved"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

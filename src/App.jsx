@@ -1,14 +1,17 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "./App.css"
 import BalanceCard from "./components/BalanceCard"
 import Header from "./components/Header"
 import LeaveForm from "./components/LeaveForm"
 import LeaveTable from "./components/LeaveTable"
-import { leaveTypes, initialLeaveHistory, calculateLeaveDays } from "./data"
+import { calculateLeaveDays } from "./data"
+import { getLeaves, getLeaveTypes, addLeave,deleteLeave,updateLeaveStatus } from "./api"
 
 function App() {
 
-  const [leaveHistory, setLeaveHistory] = useState(initialLeaveHistory);
+  const [data, setData] = useState({ leaveTypes: [], leaveHistory: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
@@ -17,6 +20,34 @@ function App() {
     to: "",
     reason: "",
   });
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [leaveTypesData, leavesData] = await Promise.all([
+          getLeaveTypes(),
+          getLeaves(),
+        ]);
+        setData({ leaveTypes: leaveTypesData, leaveHistory: leavesData });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  } else if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const { leaveTypes, leaveHistory } = data;
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -27,7 +58,7 @@ function App() {
     setFormError("");
   };
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
 
     const reason = formData.reason.trim();
@@ -51,48 +82,90 @@ function App() {
       reason,
       status: "Pending",
     };
-    
-    setLeaveHistory((prevHistory) => [newLeave, ...prevHistory]);
-    setFormError("");
-    setFormData({
-      type: "Casual",
-      from: "",
-      to: "",
-      reason: "",
-    });
+
+    try {
+      const addedLeave = await addLeave(newLeave);
+      setFormError("");
+      setData((prevData) => ({
+        ...prevData,
+        leaveHistory: [addedLeave, ...prevData.leaveHistory],
+      }));
+      setFormData({
+        type: "Casual",
+        from: "",
+        to: "",
+        reason: "",
+      });
+
+    } catch (error) {
+      setFormError("Failed to add leave: " + error.message);
+    }
+
   };
 
-  const handleCancelLeave = (id) => {
-    setLeaveHistory((prevHistory) =>
-      prevHistory.filter((leave) => leave.id !== id || leave.status !== "Pending")
-    );
-  };
+  // const handleCancelLeave = (id) => {
+  //   setLeaveHistory((prevHistory) =>
+  //     prevHistory.filter((leave) => leave.id !== id || leave.status !== "Pending")
+  //   );
+  // };
 
-  const handleReviewLeave = (id, status) => {
-    setLeaveHistory((prevHistory) =>
-      prevHistory.map((leave) =>
-        leave.id === id && leave.status === "Pending"
-          ? { ...leave, status }
-          : leave
-      )
-    );
-  };
+  const handleCancelLeave = async(id)=>{
+    try {
+      await deleteLeave(id);
+      setData((prevData) => ({
+        ...prevData,
+        leaveHistory: prevData.leaveHistory.filter((leave) => leave.id !== id),
+      }));
+
+    } catch (error) {
+      setFormError("Failed to cancel leave: " + error.message);
+    }
+  }
+
+  // const handleReviewLeave = (id, status) => {
+  //   setLeaveHistory((prevHistory) =>
+  //     prevHistory.map((leave) =>
+  //       leave.id === id && leave.status === "Pending"
+  //         ? { ...leave, status }
+  //         : leave
+  //     )
+  //   );
+  // };
+
+  const handleReviewLeave=async (id,status)=>{
+    try {
+      const updatedLeave=await updateLeaveStatus(id,status);
+      setData((prevData) => ({
+        ...prevData,
+        leaveHistory: prevData.leaveHistory.map((leave) =>
+          leave.id === id ? updatedLeave : leave
+        ),
+      }));
+
+    } catch (error) {
+      setFormError("Failed to update leave status: " + error.message);
+    }
+  }
 
   const filteredLeaveHistory = activeFilter === "All"
     ? leaveHistory
     : leaveHistory.filter((leave) => leave.status === activeFilter);
 
   const approvedLeaves = leaveHistory.filter((leave) => leave.status === "Approved");
+
   const takenDays = approvedLeaves.reduce((total, leave) => total + leave.days, 0);
+
   const leaveBalances = [
     ...leaveTypes.map((leaveType) => {
       const approvedDays = approvedLeaves
-        .filter((leave) => leave.type === leaveType.type)
+        .filter((leave) => leave.type === leaveType.name)
         .reduce((total, leave) => total + leave.days, 0);
       const daysLeft = leaveType.total - approvedDays;
 
       return {
         ...leaveType,
+        label: `${leaveType.name} leave`,
+        color: { casual: "purple", sick: "teal", earned: "green" }[leaveType.id],
         value: daysLeft,
         detail: `left of ${leaveType.total}`,
         progress: Math.max(0, Math.min(100, (daysLeft / leaveType.total) * 100)),
