@@ -52,36 +52,56 @@ export const addLeave = async (leave) => {
 
 }
 
-export const deleteLeave =async (leaveId) => {
+export const deleteLeave = async (leaveId) => {
     try {
-        const response =await fetch(`http://localhost:3001/leaves/${leaveId}`,{
+        const response = await fetch(`http://localhost:3001/leaves/${leaveId}`, {
             method: 'DELETE',
         });
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error(`Failed to delete leave. Request exits with code ${response.status}`);
         }
-    }catch(error){
-        throw new Error("Could not delete leave:"+error.message);
-    }  
+    } catch (error) {
+        throw new Error("Could not delete leave:" + error.message);
+    }
 }
 
-export const updateLeaveStatus=async(leaveId,status)=>{
+export const updateLeaveStatus = async (leaveId, status) => {
     try {
-        const response=await fetch(`http://localhost:3001/leaves/${leaveId}`,{
-            method:'PATCH',
+        const response = await fetch(`http://localhost:3001/leaves/${leaveId}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({status})
+            body: JSON.stringify({ status })
         })
 
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error(`Could not update the Leave status. Request exits with status code ${response.status}`);
-        }else{
-            const data=await response.json();
+        } else {
+            const data = await response.json();
             return data;
         }
     } catch (error) {
-        throw new Error("Could not Update the Leave! "+error.message);
+        throw new Error("Could not Update the Leave! " + error.message);
+    }
+}
+
+
+export const getLeaveById = async (id) => {
+    const response = await fetch(`http://localhost:3001/leaves/${id}`);
+
+    try {
+        if (response.status === 404) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Can't fetch the data!`)
+        } else {
+            const data = await response.json();
+            return data;
+        }
+    } catch (error) {
+        throw new Error(`Error in fetching data` + error.message);
     }
 }

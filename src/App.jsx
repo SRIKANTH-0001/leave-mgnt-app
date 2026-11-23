@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react"
 import "./App.css"
-import BalanceCard from "./components/BalanceCard"
 import Header from "./components/Header"
-import LeaveForm from "./components/LeaveForm"
-import LeaveTable from "./components/LeaveTable"
 import { calculateLeaveDays } from "./data"
-import { getLeaves, getLeaveTypes, addLeave,deleteLeave,updateLeaveStatus } from "./api"
+import { getLeaves, getLeaveTypes, addLeave, deleteLeave, updateLeaveStatus } from "./api"
+
+import { Routes, Route, useNavigate } from "react-router-dom";
+import Home from "./pages/Home";
+import History from "./pages/History";
+import Apply from "./pages/Apply";
+import LeaveDetail from "./pages/LeaveDetail";
+import NotFound from "./pages/NotFound";
 
 function App() {
+  const navigate = useNavigate();
 
   const [data, setData] = useState({ leaveTypes: [], leaveHistory: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeFilter, setActiveFilter] = useState("All");
   const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
     type: "Casual",
@@ -29,7 +33,10 @@ function App() {
           getLeaveTypes(),
           getLeaves(),
         ]);
-        setData({ leaveTypes: leaveTypesData, leaveHistory: leavesData });
+        setData({
+          leaveTypes: leaveTypesData,
+          leaveHistory: [...leavesData].sort((a, b) => Number(b.id) - Number(a.id)),
+        });
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(error.message);
@@ -42,9 +49,19 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <>
+        <Header />
+        <main className="page-content">Loading...</main>
+      </>
+    );
   } else if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <>
+        <Header />
+        <main className="page-content">Error: {error}</main>
+      </>
+    );
   }
 
   const { leaveTypes, leaveHistory } = data;
@@ -74,7 +91,7 @@ function App() {
     }
 
     const newLeave = {
-      id: crypto.randomUUID(),
+      id: Math.max(0, ...data.leaveHistory.map((leave) => Number(leave.id))) + 1,
       type: formData.type,
       from: formData.from,
       to: formData.to,
@@ -85,6 +102,7 @@ function App() {
 
     try {
       const addedLeave = await addLeave(newLeave);
+      navigate("/history");
       setFormError("");
       setData((prevData) => ({
         ...prevData,
@@ -103,38 +121,25 @@ function App() {
 
   };
 
-  // const handleCancelLeave = (id) => {
-  //   setLeaveHistory((prevHistory) =>
-  //     prevHistory.filter((leave) => leave.id !== id || leave.status !== "Pending")
-  //   );
-  // };
-
-  const handleCancelLeave = async(id)=>{
+  const handleCancelLeave = async (id) => {
     try {
       await deleteLeave(id);
       setData((prevData) => ({
         ...prevData,
         leaveHistory: prevData.leaveHistory.filter((leave) => leave.id !== id),
       }));
+      return true;
 
     } catch (error) {
       setFormError("Failed to cancel leave: " + error.message);
+      return false;
     }
   }
 
-  // const handleReviewLeave = (id, status) => {
-  //   setLeaveHistory((prevHistory) =>
-  //     prevHistory.map((leave) =>
-  //       leave.id === id && leave.status === "Pending"
-  //         ? { ...leave, status }
-  //         : leave
-  //     )
-  //   );
-  // };
 
-  const handleReviewLeave=async (id,status)=>{
+  const handleReviewLeave = async (id, status) => {
     try {
-      const updatedLeave=await updateLeaveStatus(id,status);
+      const updatedLeave = await updateLeaveStatus(id, status);
       setData((prevData) => ({
         ...prevData,
         leaveHistory: prevData.leaveHistory.map((leave) =>
@@ -147,9 +152,6 @@ function App() {
     }
   }
 
-  const filteredLeaveHistory = activeFilter === "All"
-    ? leaveHistory
-    : leaveHistory.filter((leave) => leave.status === activeFilter);
 
   const approvedLeaves = leaveHistory.filter((leave) => leave.status === "Approved");
 
@@ -181,32 +183,23 @@ function App() {
     },
   ];
 
+
+
   return (
-    <div className="app-shell">
+    <>
       <Header />
-      <main className="page-content">
-        <section className="page-intro">
-          <h1>My leaves</h1>
-          <p>Year 2026 · Leave balance and history</p>
-        </section>
-        <BalanceCard balances={leaveBalances} />
-        <section className="leave-workspace" aria-label="Leave requests">
-          <LeaveForm
-            formData={formData}
-            formError={formError}
-            onFormChange={handleFormChange}
-            handleFormSubmit={handleFormSubmit}
-          />
-          <LeaveTable
-            leaveHistory={filteredLeaveHistory}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            onCancel={handleCancelLeave}
-            onReview={handleReviewLeave}
-          />
-        </section>
-      </main>
-    </div>
+      <Routes>
+        <Route path="/" element={<Home balances={leaveBalances} leaveHistory={leaveHistory} />} />
+        <Route path="/apply" element={<Apply formData={formData}
+          formError={formError}
+          onFormChange={handleFormChange}
+          handleFormSubmit={handleFormSubmit} />}
+        />
+        <Route path="/history" element={<History leaveHistory={leaveHistory} onCancel={handleCancelLeave} onReview={handleReviewLeave} />} />
+        <Route path="/leave/:id" element={<LeaveDetail onCancel={handleCancelLeave}/>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   )
 }
 

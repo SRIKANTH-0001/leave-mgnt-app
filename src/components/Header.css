@@ -8,6 +8,23 @@
     background: #fff;
 }
 
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.nav-link{
+    color: #201d51;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nav-link--active {
+    color: #4838d1;
+}
+
 .nav-brand {
     display: flex;
     align-items: center;

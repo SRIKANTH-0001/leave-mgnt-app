@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import "./LeaveRow.css"
 import StatusBadge from "./StatusBadge"
 
@@ -12,12 +13,18 @@ function formatDate(dateString) {
 
 const LeaveRow = ({ leave, onCancel, onReview }) => (
     <tr>
-        <td className="leave-type">{leave.type}</td>
-        <td>{formatDate(leave.from)}</td>
-        <td>{formatDate(leave.to)}</td>
-        <td className="days-cell">{leave.days}</td>
-        <td className="optional-column">{leave.reason}</td>
-        <td className="optional-column"><StatusBadge status={leave.status} /></td>
+        <td className="leave-type">
+            <Link className="leave-row-link" to={`/leave/${leave.id}`}>{leave.type}</Link>
+        </td>
+        <td><Link className="leave-row-link" to={`/leave/${leave.id}`}>{formatDate(leave.from)}</Link></td>
+        <td><Link className="leave-row-link" to={`/leave/${leave.id}`}>{formatDate(leave.to)}</Link></td>
+        <td className="days-cell"><Link className="leave-row-link" to={`/leave/${leave.id}`}>{leave.days}</Link></td>
+        <td className="optional-column"><Link className="leave-row-link" to={`/leave/${leave.id}`}>{leave.reason}</Link></td>
+        <td className="optional-column">
+            <Link className="leave-row-link" to={`/leave/${leave.id}`}>
+                <StatusBadge status={leave.status} />
+            </Link>
+        </td>
         <td>
             {leave.status === "Pending" && (
                 <div className="row-actions">

@@ -72,31 +72,31 @@
       "status": "Approved"
     },
     {
-      "id": "ZgDseWZQKeQ",
-      "type": "Sick",
-      "from": "2026-11-21",
-      "to": "2026-11-22",
-      "days": 2,
-      "reason": "Fever",
+      "id": "7",
+      "type": "Earned",
+      "from": "2026-11-25",
+      "to": "2026-11-25",
+      "days": 1,
+      "reason": "Knee Fracture",
       "status": "Rejected"
     },
     {
-      "id": "zXYfYHgmyRM",
-      "type": "Sick",
-      "from": "2026-11-14",
-      "to": "2026-11-16",
-      "days": 3,
-      "reason": "Fever",
+      "id": 8,
+      "type": "Earned",
+      "from": "2026-11-25",
+      "to": "2026-11-26",
+      "days": 2,
+      "reason": "Village Festival",
       "status": "Approved"
     },
     {
-      "id": "TDaSna-xEcI",
-      "type": "Sick",
-      "from": "2026-11-21",
-      "to": "2026-11-23",
-      "days": 3,
-      "reason": "Fever",
-      "status": "Approved"
+      "id": 9,
+      "type": "Casual",
+      "from": "2026-11-26",
+      "to": "2026-11-27",
+      "days": 2,
+      "reason": "Elbow Fracture",
+      "status": "Pending"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
