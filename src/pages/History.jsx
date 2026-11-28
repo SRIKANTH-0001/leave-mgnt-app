@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import LeaveTable from '../components/LeaveTable'
 import { useSearchParams } from 'react-router-dom'
+import { useLeaves } from '../context/LeaveContext'
 
-const History = ({leaveHistory,onCancel,onReview}) => {
-
-    const [searchParams,setSearchParams] = useSearchParams();
+const History = () => {
+    const { leaves, cancelLeave, approveLeave, rejectLeave } = useLeaves()
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [actionError, setActionError] = useState('')
     const statusFilter = searchParams.get('status');
-    const filteredLeaveHistory = statusFilter ? leaveHistory.filter(leave => leave.status === statusFilter) : leaveHistory;
+    const filteredLeaveHistory = statusFilter ? leaves.filter(leave => leave.status === statusFilter) : leaves;
 
     const onFilterChange = (status) => {
         const newSearchParams = new URLSearchParams(searchParams);
@@ -18,9 +21,27 @@ const History = ({leaveHistory,onCancel,onReview}) => {
     };
 
     const handleCancel = async (id) => {
-        const cancelled = await onCancel(id);
-        if (cancelled) {
-            setSearchParams({});
+        setActionError('')
+        try {
+            const cancelled = await cancelLeave(id)
+            if (cancelled) {
+                setSearchParams({})
+            }
+        } catch (error) {
+            setActionError(error.message)
+        }
+    };
+
+    const handleReview = async (id, status) => {
+        setActionError('')
+        try {
+            if (status === 'Approved') {
+                await approveLeave(id)
+            } else if (status === 'Rejected') {
+                await rejectLeave(id)
+            }
+        } catch (error) {
+            setActionError(error.message)
         }
     };
 
@@ -28,7 +49,14 @@ const History = ({leaveHistory,onCancel,onReview}) => {
 
   return (
     <main className="page-content">
-      <LeaveTable leaveHistory={filteredLeaveHistory} onCancel={handleCancel} onReview={onReview} onFilterChange={onFilterChange} activeFilter={activeFilter} />
+      {actionError && <p className="form-error" role="alert">{actionError}</p>}
+      <LeaveTable
+        leaveHistory={filteredLeaveHistory}
+        onCancel={handleCancel}
+        onReview={handleReview}
+        onFilterChange={onFilterChange}
+        activeFilter={activeFilter}
+      />
     </main>
   )
 }

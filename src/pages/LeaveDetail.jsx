@@ -1,50 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getLeaveById } from '../api';
+import { useLeaves } from '../context/LeaveContext'
 import StatusBadge from '../components/StatusBadge';
 import './LeaveDetail.css';
 
 
-const LeaveDetail = ({ onCancel }) => {
-
+const LeaveDetail = () => {
     const { id } = useParams();
-    const [leave, setLeave] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
     const navigate = useNavigate();
+    const { leaves, loading, error, cancelLeave } = useLeaves()
     const [cancelError, setCancelError] = useState("");
-
-    useEffect(() => {
-        const loadLeave = async () => {
-            try {
-                setLoading(true);
-                setError("");
-                const leaveData = await getLeaveById(id);
-                setLeave(leaveData);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadLeave();
-    }, [id])
+    const leave = leaves.find((item) => String(item.id) === String(id));
 
     const handleCancel = async () => {
         setCancelError("");
-        const cancelled = await onCancel(leave.id);
-        if (cancelled) {
+        try {
+            await cancelLeave(leave.id);
             navigate("/history");
-        } else {
-            setCancelError("Could not cancel the leave. Please try again.");
+        } catch (error) {
+            setCancelError(`Could not cancel the leave: ${error.message}`);
         }
     };
 
 
     if (loading) return <p>Loading leave...</p>;
-    if (error) return <p>Error: {error} <br /></p>;
+    if (error) return <p>Error: {error}</p>;
     if (!leave) return <p>Leave with given id is not found</p>;
 
     return (
